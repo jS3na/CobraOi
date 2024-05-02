@@ -93,21 +93,25 @@ def telaInsereID(numeroID, opcoesIMG, opcoes, op): #responsável por toda a tela
         
         txt = pg.locateOnScreen(r'CobraOi\imagens\cpf_cliente.png', region=(300, 250, 500, 300), confidence=0.9)
         x, y = pg.center(txt)
-        pg.click(x, y+20, duration=0.8)
+        pg.moveTo(x, y+20, duration=0.8)
+        sleep(0.5)
+        pg.click()
         
     else: #se o número for cnpj, ele preenche os respectivos campos
         
         sleep(1)
         txt = pg.locateOnScreen(r'CobraOi\imagens\cnpj_cliente.png', region=(300, 250, 500, 300), confidence=0.9)
         x, y = pg.center(txt)
-        pg.click(x, y+20, duration=0.8)
+        pg.moveTo(x, y+20, duration=0.8)
+        sleep(0.5)
+        pg.click()
         
     copy(numeroID)
     sleep(0.5)
     pg.hotkey('ctrl', 'v')
     
     pg.click(922,469, duration=1)
-    sleep(6)
+    sleep(8)
     
     try: #tenta verificar se a imagem "novocliente" existe (aparece quando o cliente foi cancelado)
         
@@ -156,6 +160,8 @@ def telaInsereID(numeroID, opcoesIMG, opcoes, op): #responsável por toda a tela
     return False
 
 def telaIniciaAtendimento(): #responsável pela segunda tela
+
+    sleep(4)
     
     btt = pg.locateOnScreen(r'CobraOi\imagens\servicos_oi.png', region=(885, 100, 280, 790), confidence = 0.7) #BOTAO SERVIÇOS OI
     x, y = pg.center(btt)
@@ -205,6 +211,7 @@ def selectFaturasMandar(teclado): #responsável por enviar as faturas para o cli
                 for _ in range(count_fatura-1):
                     sleep(1)
                     teclado.press(Key.down)
+    sleep(1)
         
     pg.press("enter")
     sleep(5)
@@ -367,27 +374,38 @@ def temFatura(num, frases, teclado, nome, numeroID): #verifica se tem fatura
             selectFaturasMandar(teclado)
             sleep(3)
 
-def avisarFinalizou(tempoExecucao, teclado):
+def avisarFinalizou(tempoExecucao):
     
-    num = '86989030943'
+    #numeros = ['86989030943', '86981044887']
+    numeros = ['86989030943']
+    msgauto = "Automação de cobrança finalizada!"
+    tempexec = "Tempo de execução: {:.2f} minutos".format(tempoExecucao/60)
     
     pg.hotkey('ctrl', '2')
-    #for num in numeros:
-    sleep(1)
-    pg.press('esc')
-    sleep(1)
-    pg.click(351, 116, duration=1.5)
-    sleep(1)
-    
-    teclado.type(num)
-    sleep(3)
-    pg.press("enter")
-    sleep(1)
-    
-    teclado.type("Automação de cobrança finalizada!")
-    pg.press('enter')
-    sleep(0.5)
-    teclado.type("Tempo de execução: {:.2f} minutos".format(tempoExecucao/60))
+    for num in numeros:
+        sleep(2)
+        pg.press('esc')
+        sleep(1)
+        pg.click(351, 116, duration=1.5)
+        sleep(1)
+        
+        copy(num)
+        sleep(1)
+        pg.hotkey('ctrl', 'v')
+        sleep(3)
+        pg.press("enter")
+        sleep(1)
+
+        copy(msgauto)
+        sleep(1)
+        pg.hotkey('ctrl', 'v')
+        sleep(1)
+        pg.press('enter')
+        sleep(0.5)
+        copy(tempexec)
+        sleep(1)
+        pg.hotkey('ctrl', 'v')
+        sleep(1)
 
 def oifibra(numeroID):
 
@@ -429,9 +447,7 @@ def main():
         
         #pg.hotkey('alt', 'space', 'n', interval=0.3)
         
-        start_time = time() #tempo de execução
-        
-        planilha = read_excel(arquivo_excel, sheet_name=12, header=None)
+        planilha = read_excel(arquivo_excel, sheet_name=13, header=None)
         colunas = planilha.iloc[3:, :9]
         
         opcoesIMG = [r'CobraOi\imagens\caso1.png', r'CobraOi\imagens\caso2.png'] #variações de opção   
@@ -444,10 +460,11 @@ def main():
         count_boleto = 0
         
         frases = [
-            "Olá {}, tudo bem? Estou passando para lembrar da(s) sua(s) fatura(s) que não foi(ram) paga(s)!",
-            "Olá {}, como vai você? Estou entrando em contato para lembrá-la da(s) sua(s) fatura(s) que ainda não foram pagas.",
-            "Oi {}, espero que esteja bem! Só para te lembrar, você tem fatura(s) pendente(s) que precisa(m) ser paga(s)."
-        ]
+            "Olá {}! Como vai você? Espero que esteja tudo bem. Estou passando apenas para lembrar sobre sua(s) fatura(s) pendente(s). É importante manter tudo em dia.",
+            "Oi {}! Tudo bem contigo? Espero que sim! Estou aqui só para te relembrar das suas fatura(s) pendente(s). Lembre-se de dar uma olhada nelas quando tiver um tempinho.",
+            "Olá {}! Como estão as coisas? Espero que bem! Só queria lembrar de suas fatura(s) pendente(s). Qualquer dúvida, estou à disposição!"
+            ]
+
         
         #pg.mouseInfo()
         for index, row in colunas.iterrows():
@@ -558,13 +575,7 @@ def main():
                     print('teste')
                     sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                             
-        print(cliente_cancelado)
-        
-        #finaliza o tempo                    
-        end_time = time()
-        execution_time = end_time - start_time
-        
-        avisarFinalizou(execution_time, teclado)
+        print(cliente_cancelado)                  
         
     else: #se nenhum arquivo for selecionado
         print("- Nenhum arquivo selecionado. Encerrando o programa.")
@@ -572,8 +583,15 @@ def main():
 if __name__ == "__main__":
     
     try:
+
+        start_time = time()
         main()
-        
+
+    except IndexError:
+        end_time = time()
+        execution_time = end_time - start_time
+        avisarFinalizou(execution_time)
+
     except:
         teclado = Controller()
                 
