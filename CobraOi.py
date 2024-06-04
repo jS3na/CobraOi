@@ -7,7 +7,6 @@ from pyperclip import copy
 import tkinter as tk
 from tkinter import filedialog
 from pandas import read_excel, notna
-import keyboard
 
 def abrir_arquivo(): #para permitir que o usuario possa abrir a tabela do excel que quiser
     root = tk.Tk()
@@ -74,7 +73,7 @@ def fixo(): #verificação se o serviço atual é apenas Fixo, o que não import
     except pg.ImageNotFoundException:    
             return False 
 
-def telaInsereID(numeroID, opcoesIMG, opcoes, op): #responsável por toda a tela inicial
+def telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op): #responsável por toda a tela inicial
     
     if len(numeroID) <= 11: #se o número for cpf, ele preenche os respectivos campos
         
@@ -118,6 +117,9 @@ def telaInsereID(numeroID, opcoesIMG, opcoes, op): #responsável por toda a tela
         verificarCancel = pg.locateOnScreen(r'CobraOi\imagens\novocliente.png', region=(830, 450, 240, 100), confidence = 0.7)
         
         if verificarCancel:
+            with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                # Escrevendo no arquivo
+                arquivo.write(nome + ", " + numeroID + ", " + num + ", CANCELADO" + "\n")
             return True
         
     except pg.ImageNotFoundException: #escolhe as opções caso nao seja cliente cancelado
@@ -219,7 +221,7 @@ def selectFaturasMandar(teclado): #responsável por enviar as faturas para o cli
     sleep(1)
     pg.hotkey("ctrl", "1")
 
-def msgWhatsapp(num, frases, teclado, nome): #responsável pela msg do whatsapp
+def msgWhatsapp(num, frases, teclado, nome, numeroID): #responsável pela msg do whatsapp
     
     global achouNumero
     
@@ -265,22 +267,30 @@ def msgWhatsapp(num, frases, teclado, nome): #responsável pela msg do whatsapp
 
 def baixaPdf(teclado, nome): #responsável por baixar o pdf da fatura
 
-    global indexf
+    global indexf, count_fatura
     sleep(5)
     pg.press('esc')
     
-    sleep(1)
-    btt = pg.locateOnScreen(r'CobraOi\imagens\baixarPdf.png', region=(1000, 40, 500, 300), confidence = 0.9) #BOTÃO DE BAIXAR PDF
-    x, y = pg.center(btt)
-    pg.click(x,y, duration=0.5)
-    sleep(3.5)
-    teclado.type(nome + ' ' + str(indexf))
+    sleep(3)
 
-    sleep(1)
-    pg.press("enter")
-    sleep(1)
-    pg.press('esc')
-    sleep(1)
+    try:
+        btt = pg.locateOnScreen(r'CobraOi\imagens\baixarPdf.png', region=(1000, 40, 500, 300), confidence = 0.9) #BOTÃO DE BAIXAR PDF
+        x, y = pg.center(btt)
+        pg.click(x,y, duration=0.5)
+        sleep(3.5)
+        teclado.type(nome + ' ' + str(indexf))
+
+        sleep(1)
+
+        pg.press("enter")
+        sleep(1)
+        pg.press('esc')
+        sleep(1)
+
+    except:
+        count_fatura-=1
+        indexf-=1
+        pass
 
 def sairEvoltar(cpfCNPJ, index, opcoes, escolhas): #responsável para quando o algoritmo verifica que é necessario sair e entrar na plataforma   
         
@@ -351,6 +361,11 @@ def temFatura(num, frases, teclado, nome, numeroID): #verifica se tem fatura
         
         print('- o CPF / CNPJ {} tem um total de {} faturas'.format(numeroID, len(faturas)))
 
+        with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+            # Escrevendo no arquivo
+            arquivo.write(nome + ", " + numeroID + ", " + num + ', {} FATURA(S) PENDENTE(S)'.format(len(faturas)) + "\n")
+            
+
         global indexf
 
         indexf = 0        
@@ -367,7 +382,7 @@ def temFatura(num, frases, teclado, nome, numeroID): #verifica se tem fatura
             sleep(1)
             
         pg.hotkey("ctrl", "2")  #vai pro whatsapp para que possa enviar ao cliente
-        msgWhatsapp(num, frases, teclado, nome)
+        msgWhatsapp(num, frases, teclado, nome, numeroID)
         sleep(4)
         
         if achouNumero: #se tiver número, envia a fatura ao cliente
@@ -406,6 +421,8 @@ def avisarFinalizou(tempoExecucao):
         sleep(1)
         pg.hotkey('ctrl', 'v')
         sleep(1)
+        pg.press('enter')
+        sleep(0.5)
 
 def oifibra(numeroID):
 
@@ -437,6 +454,7 @@ def oifibra(numeroID):
     pg.hotkey('ctrl', 'end')
 
 def main():
+
     
     #arquivo_excel = abrir_arquivo()
     arquivo_excel = r'C:\Users\passo\Downloads\CONTROLE DE PAGAMENTO PARTICULAR.xlsx'
@@ -447,7 +465,8 @@ def main():
         
         #pg.hotkey('alt', 'space', 'n', interval=0.3)
         
-        planilha = read_excel(arquivo_excel, sheet_name=13, header=None)
+        planilha = read_excel(arquivo_excel, sheet_name=14, header=None)
+        
         colunas = planilha.iloc[3:, :9]
         
         opcoesIMG = [r'CobraOi\imagens\caso1.png', r'CobraOi\imagens\caso2.png'] #variações de opção   
@@ -472,13 +491,14 @@ def main():
             
             devendo = 0
             
-            verifica = [row[3], row[4], row[5], row[6], row[7], row[8]]
+            verifica = [row[4], row[5], row[6]]
             
             for i, item in enumerate(verifica):
                 if notna(item) and item != 'PAGO' and item != 'PAGO ' and item != ' PAGO' and item != 'CANCELADO' and item != 'CANCELADO ' and item != ' CANCELADO' and item != ' CHURN' and item != 'CHURN ' and item != 'CHURN':
                     devendo+=1
             
             if devendo != 0:
+                #print(row.tolist())
                 cpfCNPJ.append(row.tolist())
 
         print(cpfCNPJ)
@@ -503,7 +523,7 @@ def main():
             
             print('\n- Iniciando busca no CPF / CNPJ {}'.format(numeroID))
             
-            aa = telaInsereID(numeroID, opcoesIMG, opcoes, op) #insere as informações do cliente
+            aa = telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op) #insere as informações do cliente
             cliente_cancelado = aa
             print(cliente_cancelado)
             for escolhas, quant in enumerate(opcoes): #loop q percorre todas as opções, preenchendo - as
@@ -513,7 +533,7 @@ def main():
                 op = escolhas
                 
                 if len(opcoes)>1 and escolhas>0: #se houver mais de uma opção, ele pede para inserir as informações as próximas vezes
-                    telaInsereID(numeroID, opcoesIMG, opcoes, op)
+                    telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op)
                     
                 if not cliente_cancelado: #se o cliente não for cancelado
                     
@@ -537,6 +557,10 @@ def main():
                             print(devendo)
 
                             if devendo: #se tiver fatura pendente no econtas
+
+                                with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                                    # Escrevendo no arquivo
+                                    arquivo.write(nome + ", " + numeroID + ", " + num + ", DEVENDO NOVA FIBRA" + "\n")
                                 
                                 fatecontas = list(pg.locateAllOnScreen(r'CobraOi\imagens\baixarecontas.png', region=(940, 150, 160, 700), confidence=0.9))
                                 x, y = pg.center(fatecontas[-1])
@@ -547,7 +571,7 @@ def main():
                                 pg.hotkey('ctrl', 'w')
                                 sleep(1)
                                 pg.hotkey("ctrl", "2")  #vai pro whatsapp para que possa enviar ao cliente
-                                msgWhatsapp(num, frases, teclado, nome)
+                                msgWhatsapp(num, frases, teclado, nome, numeroID)
                                 sleep(4)
                                 
                                 if achouNumero: #se tiver número, envia a fatura ao cliente
@@ -557,6 +581,10 @@ def main():
                                 sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                                 
                             else: # se não tiver fatura pendente no econtas
+                                # Abrindo o arquivo para escrita
+                                with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                                    # Escrevendo no arquivo
+                                    arquivo.write(nome + ", " + numeroID + ", " + num + ", TUDO PAGO NOVA FIBRA" + "\n")
                                 print('sim')
                                 sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                                 
@@ -567,12 +595,18 @@ def main():
                                 sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                                 
                             except pg.ImageNotFoundException: #se caso não seja encontrado nenhuma fatura pendente no normal
+                                with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                                    # Escrevendo no arquivo
+                                    arquivo.write(nome + ", " + numeroID + ", " + num + ", TUDO PAGO" + "\n")
                                 sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                                 
-                    else: #se o serviço for Fixo  
+                    else: #se o serviço for Fixo 
+                        with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                            # Escrevendo no arquivo
+                            arquivo.write(nome + ", " + numeroID + ", " + num + ", FIXO" + "\n")
                         sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                 elif cliente_cancelado == True: #se o cliente for cancelado
-                    print('teste')
+
                     sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                             
         print(cliente_cancelado)                  
@@ -593,12 +627,12 @@ if __name__ == "__main__":
         avisarFinalizou(execution_time)
 
     except:
+        
         teclado = Controller()
                 
         num = '86989030943'
         
         pg.hotkey('ctrl', '2')
-        #for num in numeros:
         sleep(1)
         pg.press('esc')
         sleep(1)
