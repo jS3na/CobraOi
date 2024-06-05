@@ -1,27 +1,28 @@
-import traceback
-import pyautogui as pg
+import pyautogui as pg, tkinter as tk
+from traceback import format_exc
 from time import sleep, time
 from random import randint
 from pynput.keyboard import Controller, Key
 from pyperclip import copy
-import tkinter as tk
 from tkinter import filedialog
 from pandas import read_excel, notna
+
+global pessoa
 
 def abrir_arquivo(): #para permitir que o usuario possa abrir a tabela do excel que quiser
     root = tk.Tk()
     root.withdraw()  # oculta a janela principal do tkinter
-    file_path = filedialog.askopenfilename(filetypes=[("Arquivos Excel", "*.xlsx;*.xls;*.csv")])
-    return file_path
+    caminho = filedialog.askopenfilename(filetypes=[("Arquivos Excel", "*.xlsx;*.xls;*.csv")])
+    return caminho
 
 def devendoEconta():
     
     def Extrato():
         global count_extrato
         try:
-            extrato = pg.locateOnScreen(r'CobraOi\imagens\extrato.png', region=(610, 150, 160, 700), confidence=0.88)
+            extrato = pg.locateOnScreen(r'.\imagens\extrato.png', region=(610, 150, 160, 700), confidence=0.88)
             if extrato:
-                extrato = list(pg.locateAllOnScreen(r'CobraOi\imagens\extrato.png', region=(610, 150, 160, 700), confidence=0.88))
+                extrato = list(pg.locateAllOnScreen(r'.\imagens\extrato.png', region=(610, 150, 160, 700), confidence=0.88))
                 count_extrato = len(extrato)
                 print("extratos: {}".format(count_extrato))
         except pg.ImageNotFoundException:
@@ -30,9 +31,9 @@ def devendoEconta():
     def Boleto():
         global count_boleto
         try:
-            boleto = pg.locateOnScreen(r'CobraOi\imagens\boleto.png', region=(610, 150, 160, 700), confidence=0.88)
+            boleto = pg.locateOnScreen(r'.\imagens\boleto.png', region=(610, 150, 160, 700), confidence=0.88)
             if boleto:
-                boleto = list(pg.locateAllOnScreen(r'CobraOi\imagens\boleto.png', region=(610, 150, 160, 700), confidence=0.88))
+                boleto = list(pg.locateAllOnScreen(r'.\imagens\boleto.png', region=(610, 150, 160, 700), confidence=0.88))
                 count_boleto = len(boleto)
                 print("boletos: {}".format(count_boleto))
         except pg.ImageNotFoundException:
@@ -55,7 +56,7 @@ def verifOifibra(): #verificação se o serviço atual é apenas OiFibra
     global simOifibras
     
     try:
-        busca = pg.locateOnScreen(r'CobraOi\imagens\oifibra.png', region=(470, 500, 500, 100), confidence = 0.7)
+        busca = pg.locateOnScreen(r'.\imagens\oifibra.png', region=(470, 500, 500, 100), confidence = 0.7)
         
         if busca: 
             simOifibras = True
@@ -67,7 +68,7 @@ def verifOifibra(): #verificação se o serviço atual é apenas OiFibra
 
 def fixo(): #verificação se o serviço atual é apenas Fixo, o que não importa para a gente
     try:
-        busca = pg.locateOnScreen(r'CobraOi\imagens\cancelado.png', region=(600, 600, 300, 100), confidence = 0.7)     
+        busca = pg.locateOnScreen(r'.\imagens\cancelado.png', region=(600, 600, 300, 100), confidence = 0.7)     
         if busca: return True
         
     except pg.ImageNotFoundException:    
@@ -78,7 +79,7 @@ def telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op): #responsável por 
     if len(numeroID) <= 11: #se o número for cpf, ele preenche os respectivos campos
         
         sleep(1)
-        txt = pg.locateOnScreen(r'CobraOi\imagens\nome_vendedor.png', region=(300, 200, 500, 300), confidence=0.9)
+        txt = pg.locateOnScreen(r'.\imagens\nome_vendedor.png', region=(300, 200, 500, 300), confidence=0.9)
         x, y = pg.center(txt)
         pg.click(x, y+20, duration=0.5)
         sleep(0.3)
@@ -90,7 +91,7 @@ def telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op): #responsável por 
         
         sleep(1)
         
-        txt = pg.locateOnScreen(r'CobraOi\imagens\cpf_cliente.png', region=(300, 250, 500, 300), confidence=0.9)
+        txt = pg.locateOnScreen(r'.\imagens\cpf_cliente.png', region=(300, 250, 500, 300), confidence=0.9)
         x, y = pg.center(txt)
         pg.moveTo(x, y+20, duration=0.8)
         sleep(0.5)
@@ -99,7 +100,7 @@ def telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op): #responsável por 
     else: #se o número for cnpj, ele preenche os respectivos campos
         
         sleep(1)
-        txt = pg.locateOnScreen(r'CobraOi\imagens\cnpj_cliente.png', region=(300, 250, 500, 300), confidence=0.9)
+        txt = pg.locateOnScreen(r'.\imagens\cnpj_cliente.png', region=(300, 250, 500, 300), confidence=0.9)
         x, y = pg.center(txt)
         pg.moveTo(x, y+20, duration=0.8)
         sleep(0.5)
@@ -114,10 +115,10 @@ def telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op): #responsável por 
     
     try: #tenta verificar se a imagem "novocliente" existe (aparece quando o cliente foi cancelado)
         
-        verificarCancel = pg.locateOnScreen(r'CobraOi\imagens\novocliente.png', region=(830, 450, 240, 100), confidence = 0.7)
+        verificarCancel = pg.locateOnScreen(r'.\imagens\novocliente.png', region=(830, 450, 240, 100), confidence = 0.7)
         
         if verificarCancel:
-            with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+            with open(r'.\relatorio.txt', 'a') as arquivo:
                 # Escrevendo no arquivo
                 arquivo.write(nome + ", " + numeroID + ", " + num + ", CANCELADO" + "\n")
             return True
@@ -153,7 +154,7 @@ def telaInsereID(nome, num, numeroID, opcoesIMG, opcoes, op): #responsável por 
             
             sleep(1)
             
-            btt = pg.locateOnScreen(r'CobraOi\imagens\avancar_inicial.png', region=(700, 200, 300, 650), confidence=0.7)
+            btt = pg.locateOnScreen(r'.\imagens\avancar_inicial.png', region=(700, 200, 300, 650), confidence=0.7)
             x, y = pg.center(btt)
             pg.click(x, y)
             
@@ -165,7 +166,17 @@ def telaIniciaAtendimento(): #responsável pela segunda tela
 
     sleep(4)
     
-    btt = pg.locateOnScreen(r'CobraOi\imagens\servicos_oi.png', region=(885, 100, 280, 790), confidence = 0.7) #BOTAO SERVIÇOS OI
+    while True:
+        
+        try: 
+            btt = pg.locateOnScreen(r'.\imagens\servicos_oi.png', region=(885, 100, 280, 790), confidence = 0.7) #BOTAO SERVIÇOS OI
+            
+            if btt:
+                break
+            
+        except pg.ImageNotFoundException:
+            sleep(2)
+
     x, y = pg.center(btt)
     pg.click(x, y)
     
@@ -173,7 +184,7 @@ def telaIniciaAtendimento(): #responsável pela segunda tela
     pg.scroll(-500)
     sleep(0.8)
     
-    btt = pg.locateOnScreen(r'CobraOi\imagens\iniciar_atendimento.png', region=(915, 100, 240, 790), confidence = 0.7) #BOTAO INICIAR ATENDIMENTO
+    btt = pg.locateOnScreen(r'.\imagens\iniciar_atendimento.png', region=(915, 100, 240, 790), confidence = 0.7) #BOTAO INICIAR ATENDIMENTO
     x, y = pg.center(btt)
     pg.click(x, y, duration=0.4)
 
@@ -182,18 +193,18 @@ def telaSegundaEcontas(): #terceira tela
     sleep(4)
     
     if not simOifibras:
-        btt = pg.locateOnScreen(r'CobraOi\imagens\segunda_via.png', region=(500, 500, 500, 300), confidence = 0.7) #BOTAO SEGUNDA VIA
+        btt = pg.locateOnScreen(r'.\imagens\segunda_via.png', region=(500, 500, 500, 300), confidence = 0.7) #BOTAO SEGUNDA VIA
         x, y = pg.center(btt)
         pg.click(x, y, duration=0.5)
     
     else:
-        btt = pg.locateOnScreen(r'CobraOi\imagens\econtas.png', region=(500, 500, 500, 300), confidence = 0.7) #BOTAO E-CONTAS
+        btt = pg.locateOnScreen(r'.\imagens\econtas.png', region=(500, 500, 500, 300), confidence = 0.7) #BOTAO E-CONTAS
         x, y = pg.center(btt)
         pg.click(x, y, duration=0.5)
 
 def selectFaturasMandar(teclado): #responsável por enviar as faturas para o cliente pela pasta de downloads
     
-    btt = list(pg.locateAllOnScreen(r'CobraOi\imagens\downloads.png', confidence=0.7)) #BOTÃO DOWNLOADS
+    btt = list(pg.locateAllOnScreen(r'.\imagens\downloads.png', confidence=0.7)) #BOTÃO DOWNLOADS
     x, y= pg.center(btt[0])
     pg.click(x, y, duration=0.5)
     sleep(1)
@@ -230,7 +241,7 @@ def msgWhatsapp(num, frases, teclado, nome, numeroID): #responsável pela msg do
     pg.press('esc', presses=2, interval=0.8)
     sleep(1)
     
-    btt = pg.locateOnScreen(r'CobraOi\imagens\novaconversa.png', region=(20, 80, 490, 240), confidence=0.7) #BOTÃO DE NOVA CONVERSA
+    btt = pg.locateOnScreen(r'.\imagens\novaconversa.png', region=(20, 80, 490, 240), confidence=0.7) #BOTÃO DE NOVA CONVERSA
     x, y = pg.center(btt)
     pg.click(x, y, duration=0.5)
     sleep(1)
@@ -241,7 +252,7 @@ def msgWhatsapp(num, frases, teclado, nome, numeroID): #responsável pela msg do
     sleep(3)
     
     try: #verifica se tem o "+" de adicionar mídia, mostrando que o número foi encontrado, e permitindo que mande as faturas para ele
-        temnumero = pg.locateOnScreen(r"CobraOi\imagens\adicionar_midia.png", region=(290, 700, 520, 240), confidence=0.7)
+        temnumero = pg.locateOnScreen(r".\imagens\adicionar_midia.png", region=(290, 700, 520, 240), confidence=0.7)
 
         if temnumero: #caso tenha achado o número
             achouNumero = True
@@ -256,7 +267,7 @@ def msgWhatsapp(num, frases, teclado, nome, numeroID): #responsável pela msg do
             x, y = pg.center(temnumero)
             pg.click(x, y, duration=0.5)
             sleep(0.8)  
-            btt = pg.locateOnScreen(r'CobraOi\imagens\doc.png', region=(290, 400, 520, 500), confidence=0.7) #BOTÃO DE DOCUMENTOS, PARA ENVIAR A FATURA
+            btt = pg.locateOnScreen(r'.\imagens\doc.png', region=(290, 400, 520, 500), confidence=0.7) #BOTÃO DE DOCUMENTOS, PARA ENVIAR A FATURA
             x, y = pg.center(btt)
             pg.click(x, y, duration=0.5)
 
@@ -274,7 +285,7 @@ def baixaPdf(teclado, nome): #responsável por baixar o pdf da fatura
     sleep(3)
 
     try:
-        btt = pg.locateOnScreen(r'CobraOi\imagens\baixarPdf.png', region=(1000, 40, 500, 300), confidence = 0.9) #BOTÃO DE BAIXAR PDF
+        btt = pg.locateOnScreen(r'.\imagens\baixarPdf.png', region=(1000, 40, 500, 300), confidence = 0.9) #BOTÃO DE BAIXAR PDF
         x, y = pg.center(btt)
         pg.click(x,y, duration=0.5)
         sleep(3.5)
@@ -298,7 +309,7 @@ def sairEvoltar(cpfCNPJ, index, opcoes, escolhas): #responsável para quando o a
         opcoes = []
         
     if len(opcoes) > 1: #se houver mais de uma opção, ele inicia um novo atendimento para ir para a segunda opção
-        btt = pg.locateOnScreen(r'CobraOi\imagens\novo_atendimento.png', region=(290, 0, 800, 300), confidence = 0.7) #BOTÃO DE NOVO ATENDIMENTO
+        btt = pg.locateOnScreen(r'.\imagens\novo_atendimento.png', region=(290, 0, 800, 300), confidence = 0.7) #BOTÃO DE NOVO ATENDIMENTO
         x, y = pg.center(btt)
         pg.click(x,y, duration=0.5)
     
@@ -306,37 +317,37 @@ def sairEvoltar(cpfCNPJ, index, opcoes, escolhas): #responsável para quando o a
         
         sleep(2)
 
-        btt = pg.locateOnScreen(r'CobraOi\imagens\herminia_perfil.png', region=(835, 100, 500, 300), confidence=0.7) #BOTÃO DO PERFIL HERMÍNIA
+        btt = pg.locateOnScreen(r'.\imagens\herminia_perfil.png', region=(835, 100, 500, 300), confidence=0.7) #BOTÃO DO PERFIL HERMÍNIA
         x, y = pg.center(btt)
         pg.click(x,y, duration=0.5)
         
         sleep(2)
         
-        btt = pg.locateOnScreen(r'CobraOi\imagens\portal_selecao.png', region=(835, 100, 500, 300), confidence=0.7) #BOTÃO PARA SAIR DO PORTAL E IR PARA SELEÇÃO
+        btt = pg.locateOnScreen(r'.\imagens\portal_selecao.png', region=(835, 100, 500, 300), confidence=0.7) #BOTÃO PARA SAIR DO PORTAL E IR PARA SELEÇÃO
         x, y = pg.center(btt)
         pg.click(x,y, duration=0.5)
         
         sleep(3)
                 
-        btt = pg.locateOnScreen(r'CobraOi\imagens\opc.png', region=(800, 200, 500, 500), confidence=0.7) #PARA ABRIR AS OPÇÕES VAREJO E EMPRESARIAL
+        btt = pg.locateOnScreen(r'.\imagens\opc.png', region=(800, 200, 500, 500), confidence=0.7) #PARA ABRIR AS OPÇÕES VAREJO E EMPRESARIAL
         x, y = pg.center(btt)
         pg.click(x,y, duration=0.5)
         
         sleep(1)
         
         if len(str(cpfCNPJ[index + 1][1])) <= 11: #se for cpf, seleciona a opção "varejo"
-            btt = pg.locateOnScreen(r'CobraOi\imagens\varejo.png', region=(300, 200, 700, 400), confidence=0.7) #BOTÃO VAREJO
+            btt = pg.locateOnScreen(r'.\imagens\varejo.png', region=(300, 200, 700, 400), confidence=0.7) #BOTÃO VAREJO
             x, y = pg.center(btt)
             pg.click(x,y, duration=0.8)
             sleep(1)
 
         else: #se for cnpj, seleciona a opção "empresarial"
-            btt = pg.locateOnScreen(r'CobraOi\imagens\empresarial.png', region=(300, 200, 700, 400), confidence=0.7) #BOTÃO EMPRESARIAL
+            btt = pg.locateOnScreen(r'.\imagens\empresarial.png', region=(300, 200, 700, 400), confidence=0.7) #BOTÃO EMPRESARIAL
             x, y = pg.center(btt)
             pg.click(x,y, duration=0.8)
             sleep(1)
             
-        btt = pg.locateOnScreen(r'CobraOi\imagens\iniciarrr.png', region=(300, 200, 700, 400), confidence=0.7) #INICIAR
+        btt = pg.locateOnScreen(r'.\imagens\iniciarrr.png', region=(300, 200, 700, 400), confidence=0.7) #INICIAR
         x, y = pg.center(btt)
         pg.click(x,y, duration=0.8)
         sleep(4)
@@ -353,15 +364,15 @@ def temFatura(num, frases, teclado, nome, numeroID): #verifica se tem fatura
     
     global count_fatura, faturas
     #procura o icone de baixar a fatura
-    semPagar = pg.locateOnScreen(r'CobraOi\imagens\baixarfatura.png', region=(970, 250, 250, 600), confidence = 0.75)
+    semPagar = pg.locateOnScreen(r'.\imagens\baixarfatura.png', region=(970, 250, 250, 600), confidence = 0.75)
     
     if semPagar: #se houver ao menos uma fatura, ele procura por mais
-        faturas = list(pg.locateAllOnScreen(r'CobraOi\imagens\baixarfatura.png', region=(970, 250, 250, 600), confidence=0.75))
+        faturas = list(pg.locateAllOnScreen(r'.\imagens\baixarfatura.png', region=(970, 250, 250, 600), confidence=0.75))
         count_fatura = len(faturas)
         
         print('- o CPF / CNPJ {} tem um total de {} faturas'.format(numeroID, len(faturas)))
 
-        with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+        with open(r'.\relatorio.txt', 'a') as arquivo:
             # Escrevendo no arquivo
             arquivo.write(nome + ", " + numeroID + ", " + num + ', {} FATURA(S) PENDENTE(S)'.format(len(faturas)) + "\n")
             
@@ -428,17 +439,17 @@ def oifibra(numeroID):
 
     sleep(3)
     pg.scroll(-1000)
-    econtaop = pg.locateOnScreen(r'CobraOi\imagens\pesquisaecontas.png', region=(300, 200, 500, 300), confidence=0.9)
+    econtaop = pg.locateOnScreen(r'.\imagens\pesquisaecontas.png', region=(300, 200, 500, 300), confidence=0.9)
     x, y = pg.center(econtaop)
     pg.click(x, y, duration=0.5)
     
     sleep(1)
-    econtaop = pg.locateOnScreen(r'CobraOi\imagens\contasfibra.png', region=(300, 400, 500, 300), confidence=0.7)
+    econtaop = pg.locateOnScreen(r'.\imagens\contasfibra.png', region=(300, 400, 500, 300), confidence=0.7)
     x, y = pg.center(econtaop)
     pg.click(x, y, duration=0.5)
     
     sleep(1)
-    econtaop = pg.locateOnScreen(r'CobraOi\imagens\cpfecontas.png', region=(600, 300, 500, 300), confidence=0.7)
+    econtaop = pg.locateOnScreen(r'.\imagens\cpfecontas.png', region=(600, 300, 500, 300), confidence=0.7)
     x, y = pg.center(econtaop)
     pg.click(x, y+30, duration=0.5)
     
@@ -446,7 +457,7 @@ def oifibra(numeroID):
     pg.write(numeroID)
     sleep(1)
     
-    econtaop = pg.locateOnScreen(r'CobraOi\imagens\enterecontas.png', region=(400, 450, 500, 300), confidence=0.9)
+    econtaop = pg.locateOnScreen(r'.\imagens\enterecontas.png', region=(400, 450, 500, 300), confidence=0.9)
     x, y = pg.center(econtaop)
     pg.click(x, y, duration=0.5)
     
@@ -454,10 +465,12 @@ def oifibra(numeroID):
     pg.hotkey('ctrl', 'end')
 
 def main():
-
     
-    #arquivo_excel = abrir_arquivo()
-    arquivo_excel = r'C:\Users\passo\Downloads\CONTROLE DE PAGAMENTO PARTICULAR.xlsx'
+    global pessoa
+    
+    arquivo_excel = abrir_arquivo()
+    #arquivo_excel = r'C:\Users\GTSNET\Downloads\CONTROLE DE PAGAMENTO PARTICULAR.xlsx'
+    
     
     if arquivo_excel:
         
@@ -469,7 +482,7 @@ def main():
         
         colunas = planilha.iloc[3:, :9]
         
-        opcoesIMG = [r'CobraOi\imagens\caso1.png', r'CobraOi\imagens\caso2.png'] #variações de opção   
+        opcoesIMG = [r'.\imagens\caso1.png', r'.\imagens\caso2.png'] #variações de opção   
         opcoes = []
         
         cpfCNPJ = []
@@ -516,6 +529,7 @@ def main():
             num = str(conta[2]) #numero da vez
             #num = str(89981442340)
             nome = str(conta[0]) #nome da vez
+            pessoa = nome
             
             if len(num) > 15:
                 num = num.split('/')
@@ -558,11 +572,11 @@ def main():
 
                             if devendo: #se tiver fatura pendente no econtas
 
-                                with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                                with open(r'.\relatorio.txt', 'a') as arquivo:
                                     # Escrevendo no arquivo
                                     arquivo.write(nome + ", " + numeroID + ", " + num + ", DEVENDO NOVA FIBRA" + "\n")
                                 
-                                fatecontas = list(pg.locateAllOnScreen(r'CobraOi\imagens\baixarecontas.png', region=(940, 150, 160, 700), confidence=0.9))
+                                fatecontas = list(pg.locateAllOnScreen(r'.\imagens\baixarecontas.png', region=(940, 150, 160, 700), confidence=0.9))
                                 x, y = pg.center(fatecontas[-1])
                                 pg.click(x,y, duration=0.5)
                                 
@@ -582,7 +596,7 @@ def main():
                                 
                             else: # se não tiver fatura pendente no econtas
                                 # Abrindo o arquivo para escrita
-                                with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                                with open(r'.\relatorio.txt', 'a') as arquivo:
                                     # Escrevendo no arquivo
                                     arquivo.write(nome + ", " + numeroID + ", " + num + ", TUDO PAGO NOVA FIBRA" + "\n")
                                 print('sim')
@@ -595,13 +609,13 @@ def main():
                                 sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                                 
                             except pg.ImageNotFoundException: #se caso não seja encontrado nenhuma fatura pendente no normal
-                                with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                                with open(r'.\relatorio.txt', 'a') as arquivo:
                                     # Escrevendo no arquivo
                                     arquivo.write(nome + ", " + numeroID + ", " + num + ", TUDO PAGO" + "\n")
                                 sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
                                 
                     else: #se o serviço for Fixo 
-                        with open(r'CobraOi\relatorio.txt', 'a') as arquivo:
+                        with open(r'.\relatorio.txt', 'a') as arquivo:
                             # Escrevendo no arquivo
                             arquivo.write(nome + ", " + numeroID + ", " + num + ", FIXO" + "\n")
                         sairEvoltar(cpfCNPJ, index, opcoes, escolhas)
@@ -644,11 +658,11 @@ if __name__ == "__main__":
         pg.press("enter")
         sleep(1)
         
-        teclado.type("ACONTECEU UM ERRO: \n\n\n\n")
+        teclado.type("ACONTECEU UM ERRO NO(A) {}: \n\n\n\n".format(pessoa))
         sleep(1)
         pg.press('enter')
         
-        error_message = traceback.format_exc()
+        error_message = format_exc()
         
         copy(error_message)
         sleep(1)
