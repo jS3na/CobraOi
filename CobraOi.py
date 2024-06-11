@@ -402,8 +402,8 @@ def temFatura(num, frases, teclado, nome, numeroID): #verifica se tem fatura
 
 def avisarFinalizou(tempoExecucao):
     
-    #numeros = ['86989030943', '86981044887']
-    numeros = ['86989030943']
+    numeros = ['86989030943', '86981044887']
+    #numeros = ['86989030943']
     msgauto = "Automação de cobrança finalizada!"
     tempexec = "Tempo de execução: {:.2f} minutos".format(tempoExecucao/60)
     
@@ -641,6 +641,9 @@ if __name__ == "__main__":
         avisarFinalizou(execution_time)
 
     except:
+
+        end_time = time()
+        execution_time = end_time - start_time
         
         teclado = Controller()
                 
@@ -658,7 +661,7 @@ if __name__ == "__main__":
         pg.press("enter")
         sleep(1)
         
-        teclado.type("ACONTECEU UM ERRO NO(A) {}: \n\n\n\n".format(pessoa))
+        teclado.type("ACONTECEU UM ERRO NO(A) {} \n\nTEMPO DE DURAÇÃO: {} \n\n\n\n".format(pessoa, execution_time))
         sleep(1)
         pg.press('enter')
         
