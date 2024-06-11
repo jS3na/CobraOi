@@ -468,8 +468,8 @@ def main():
     
     global pessoa
     
-    arquivo_excel = abrir_arquivo()
-    #arquivo_excel = r'C:\Users\GTSNET\Downloads\CONTROLE DE PAGAMENTO PARTICULAR.xlsx'
+    #arquivo_excel = abrir_arquivo()
+    arquivo_excel = r'C:\Users\passo\Downloads\CONTROLE DE PAGAMENTO PARTICULAR (1).xlsx'
     
     
     if arquivo_excel:
@@ -514,7 +514,8 @@ def main():
                 #print(row.tolist())
                 cpfCNPJ.append(row.tolist())
 
-        print(cpfCNPJ)
+        for i in cpfCNPJ:
+            print(i)
         
         tempo_total_segundos = len(cpfCNPJ) * 75
         tempo_execucao_minutos = tempo_total_segundos // 60
